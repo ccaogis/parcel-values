@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parcel Value History</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 6px; text-align: right; }
+        th { background: #f4f4f4; }
+        td:first-child, th:first-child { text-align: left; }
+    </style>
+</head>
+<body>
+
+<h2>Assessed Value History</h2>
+<div id="table"></div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const pin = params.get("pin");
+
+const url = `https://datacatalog.cookcountyil.gov/resource/uzyt-m557.json?pin=${pin}`;
+
+fetch(url)
+  .then(res => res.json())
+  .then(data => {
+
+    // Sort by year DESC
+    data.sort((a,b) => b.year - a.year);
+
+    let html = "<table>";
+    html += "<tr><th>Year</th><th>Land</th><th>Building</th><th>Total</th></tr>";
+
+    data.forEach(row => {
+        html += `<tr>
+            <td>${row.year}</td>
+            <td>${row.certified_land || ''}</td>
+            <td>${row.certified_bldg || ''}</td>
+            <td>${row.certified_tot || ''}</td>
+        </tr>`;
+    });
+
+    html += "</table>";
+    document.getElementById("table").innerHTML = html;
+  });
+</script>
+
+</body>
+</html>
