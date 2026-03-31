@@ -1,48 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Parcel Value History</title>
-    <style>
-        body { font-family: Arial; padding: 20px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ccc; padding: 6px; text-align: right; }
-        th { background: #f4f4f4; }
-        td:first-child, th:first-child { text-align: left; }
-    </style>
+<meta charset="UTF-8">
+<title>Assessed Value History</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; }
+table { border-collapse: collapse; width: 100%; max-width: 600px; margin-top: 20px; }
+th, td { border: 1px solid #999; padding: 8px; text-align: center; }
+th { background-color: #f2f2f2; }
+caption { font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
+</style>
 </head>
 <body>
 
-<h2>Assessed Value History</h2>
-<div id="table"></div>
+<h1>Parcel Assessed Value History</h1>
+<p id="pinDisplay"></p>
+<table id="valueTable">
+<thead>
+<tr>
+<th>Year</th>
+<th>Mailed Total</th>
+<th>Certified Total</th>
+<th>Board Total</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
 
 <script>
+// Get PIN from URL
 const params = new URLSearchParams(window.location.search);
-const pin = params.get("pin");
+const pin = params.get('pin');
+document.getElementById('pinDisplay').textContent = pin ? `PIN: ${pin}` : 'No PIN specified.';
 
-const url = `https://datacatalog.cookcountyil.gov/resource/uzyt-m557.json?pin=${pin}`;
-
-fetch(url)
-  .then(res => res.json())
-  .then(data => {
-
-    // Sort by year DESC
-    data.sort((a,b) => b.year - a.year);
-
-    let html = "<table>";
-    html += "<tr><th>Year</th><th>Land</th><th>Building</th><th>Total</th></tr>";
-
-    data.forEach(row => {
-        html += `<tr>
-            <td>${row.year}</td>
-            <td>${row.certified_land || ''}</td>
-            <td>${row.certified_bldg || ''}</td>
-            <td>${row.certified_tot || ''}</td>
-        </tr>`;
+// Only proceed if a PIN is provided
+if (pin) {
+    const url = `https://datacatalog.cookcountyil.gov/resource/uzyt-m557.json?pin=${pin}`;
+    
+    fetch(url)
+    .then(res => res.json())
+    .then(data => {
+        const tbody = document.querySelector("#valueTable tbody");
+        // Sort by year ascending
+        data.sort((a,b) => a.year - b.year);
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.year}</td>
+                <td>${row.mailed_tot || ''}</td>
+                <td>${row.certified_tot || ''}</td>
+                <td>${row.board_tot || ''}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    })
+    .catch(err => {
+        document.getElementById('pinDisplay').textContent = `Error loading data: ${err}`;
     });
-
-    html += "</table>";
-    document.getElementById("table").innerHTML = html;
-  });
+}
 </script>
 
 </body>
